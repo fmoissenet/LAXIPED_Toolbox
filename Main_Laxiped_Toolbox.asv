@@ -40,7 +40,6 @@ Specimen.side = 'Right';
 % -------------------------------------------------------------------------
 % TIBIA/FIBULA ANATOMICAL CALIBRATION
 % -------------------------------------------------------------------------
-% Load calibration file
 cd([Folder.data,Specimen.id,'\']);
 c3dFile = 'anatomicalLandmarks_01.c3d';
 btkFile = btkReadAcquisition(c3dFile);
@@ -48,15 +47,14 @@ Marker  = btkGetMarkers(btkFile);
 Event   = btkGetEvents(btkFile);
 fmarker = btkGetPointFrequency(btkFile);
 
-% Stylus calibration
-STY01      = permute(Marker.STYLUSa_01,[2,3,1]);
-STY02      = permute(Marker.STYLUSa_02,[2,3,1]);
-STY03      = permute(Marker.STYLUSa_03,[2,3,1]);
-STY04      = permute(Marker.STYLUSa_04,[2,3,1]);
-XSTY       = STY01-STY03;
-YSTY       = STY02-STY04;
-ZSTY       = cross(XSTY,YSTY);
-XSTY       = cross(YSTY,ZSTY);
-TSTY       = [XSTY YSTY ZSTY STY04; zeros(1,3,length(STY01)) ones(1,1,length(STY01))];
-TGLO       = repmat([1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1],[1,1,length(STY01)]);
-[~,~,rCsj] = SCoRE_array3(TGLO,TSTY);
+STY01 = permute(Marker.STYLUSa_01,[2,3,1]);
+STY02 = permute(Marker.STYLUSa_02,[2,3,1]);
+STY03 = permute(Marker.STYLUSa_03,[2,3,1]);
+STY04 = permute(Marker.STYLUSa_04,[2,3,1]);
+XSTY  = STY01-STY03;
+YSTY  = STY02-STY04;
+ZSTY  = cross(XSTY,YSTY);
+XSTY  = cross(YSTY,ZSTY);
+TSTY  = [XSTY YSTY ZSTY STY04; zeros(1,3,length(STY01)) ones(1,1,length(STY01))];
+
+[rC,rCsi,rCsj,Residual] = SCoRE_array3(Ti,Tj)
