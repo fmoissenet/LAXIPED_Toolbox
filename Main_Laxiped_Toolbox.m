@@ -53,7 +53,7 @@ segments = {'TIBIA','FIBUL','META1','META2','META3','META4','META5', ...
 for imarker = 1:numel(nmarker)
     data = permute(tMarker.(nmarker{imarker})(:,:), [2,3,1]); % 3x1xT
     data = zerosToNaN_array3(data);
-    data = interp_array3(data,'pchip');
+%     data = interp_array3(data,'pchip');
 %     data = smooth_array3(data,fmarker,3);
     Marker.(nmarker{imarker}) = data;
 end
@@ -63,11 +63,11 @@ clear tMarker;
 % CLUSTER RIGIDIFICATION
 % -------------------------------------------------------------------------
 MarkerR = struct();
-for isegment = 3:numel(segments) % Not on TIBIA and FIBULA
+for isegment = 1:numel(segments)
     seg         = segments{isegment};
     X_seg       = cat(4,Marker.([seg '_c1']),Marker.([seg '_c2']), ...
                         Marker.([seg '_c3']),Marker.([seg '_c4']));
-    out         = enforce_cluster_rigidity(X_seg);
+    out         = enforce_cluster_rigidity(X_seg,struct('method','trimmed','trimFrac',0.75));
     recon.(seg) = out.Xrigid;
     Sref.(seg)  = out.Smean;
     markers     = rigidMarkersFromCluster(recon.(seg));
@@ -75,14 +75,6 @@ for isegment = 3:numel(segments) % Not on TIBIA and FIBULA
         MarkerR.([segments{isegment},'_c',num2str(imarker)]) = markers{imarker};
     end
 end
-MarkerR.TIBIA_c1 = Marker.TIBIA_c1;
-MarkerR.TIBIA_c2 = Marker.TIBIA_c2;
-MarkerR.TIBIA_c3 = Marker.TIBIA_c3;
-MarkerR.TIBIA_c4 = Marker.TIBIA_c4;
-MarkerR.FIBUL_c1 = Marker.FIBUL_c1;
-MarkerR.FIBUL_c2 = Marker.FIBUL_c2;
-MarkerR.FIBUL_c3 = Marker.FIBUL_c3;
-MarkerR.FIBUL_c4 = Marker.FIBUL_c4;
 MarkerR.FME      = Marker.FME;
 MarkerR.FLE      = Marker.FLE;
 MarkerR.TAM      = Marker.TAM;
@@ -91,24 +83,24 @@ MarkerR.FAL      = Marker.FAL;
 % -------------------------------------------------------------------------
 % SET TIBIA/FIBULA ANATOMICAL COORDINATE SYSTEMS (MEAN FRAMES 1->100)
 % -------------------------------------------------------------------------
-Z         = Vnorm_array3(mean(MarkerR.FAL(:,:,1:100),3)-mean(MarkerR.TAM(:,:,1:100),3));
-X         = Vnorm_array3(cross((mean(MarkerR.FME(:,:,1:100),3)+mean(MarkerR.FLE(:,:,1:100),3))/2-mean(MarkerR.FAL(:,:,1:100),3),(mean(MarkerR.FME(:,:,1:100),3)+mean(MarkerR.FLE(:,:,1:100),3))/2-mean(MarkerR.TAM(:,:,1:100),3)));
+Z         = Vnorm_array3(mean(MarkerR.FAL(:,:,1:100),3,'omitnan')-mean(MarkerR.TAM(:,:,1:100),3,'omitnan'));
+X         = Vnorm_array3(cross((mean(MarkerR.FME(:,:,1:100),3,'omitnan')+mean(MarkerR.FLE(:,:,1:100),3,'omitnan'))/2-mean(MarkerR.FAL(:,:,1:100),3,'omitnan'),(mean(MarkerR.FME(:,:,1:100),3,'omitnan')+mean(MarkerR.FLE(:,:,1:100),3,'omitnan'))/2-mean(MarkerR.TAM(:,:,1:100),3,'omitnan')));
 Y         = cross(Z,X);
-O         = (mean(MarkerR.FAL(:,:,1:100),3)+mean(MarkerR.TAM(:,:,1:100),3))/2;
+O         = (mean(MarkerR.FAL(:,:,1:100),3,'omitnan')+mean(MarkerR.TAM(:,:,1:100),3,'omitnan'))/2;
 T_a.TIBIA = [X Y Z O; 0 0 0 1];
 
 % -------------------------------------------------------------------------
 % COMPUTE RIGID TRANSFORMATION BETWEEN TECHNICAL AND ANATOMICAL FRAMES (MEAN FRAMES 1->100)
 % -------------------------------------------------------------------------
 for isegment = 1:numel(segments)
-    X = Vnorm_array3(mean(MarkerR.([segments{isegment},'_c3']),3) - mean(MarkerR.([segments{isegment},'_c1']),3));
-    Y = Vnorm_array3(mean(MarkerR.([segments{isegment},'_c2']),3) - mean(MarkerR.([segments{isegment},'_c4']),3));
+    X = Vnorm_array3(mean(MarkerR.([segments{isegment},'_c3'])(:,:,1:100),3,'omitnan') - mean(MarkerR.([segments{isegment},'_c1'])(:,:,1:100),3,'omitnan'));
+    Y = Vnorm_array3(mean(MarkerR.([segments{isegment},'_c2'])(:,:,1:100),3,'omitnan') - mean(MarkerR.([segments{isegment},'_c4'])(:,:,1:100),3,'omitnan'));
     Z = cross(X,Y); 
     X = cross(Z,Y);
-    O = (mean(MarkerR.([segments{isegment},'_c1']),3) + ...
-         mean(MarkerR.([segments{isegment},'_c2']),3) + ...
-         mean(MarkerR.([segments{isegment},'_c3']),3) + ...
-         mean(MarkerR.([segments{isegment},'_c4']),3))/4; % Cluster centroid
+    O = (mean(MarkerR.([segments{isegment},'_c1'])(:,:,1:100),3,'omitnan') + ...
+         mean(MarkerR.([segments{isegment},'_c2'])(:,:,1:100),3,'omitnan') + ...
+         mean(MarkerR.([segments{isegment},'_c3'])(:,:,1:100),3,'omitnan') + ...
+         mean(MarkerR.([segments{isegment},'_c4'])(:,:,1:100),3,'omitnan'))/4; % Cluster centroid
     for iframe = 1:size(X,3)
         T_t.(segments{isegment})(:,:,iframe) = [X(:,:,iframe) Y(:,:,iframe) Z(:,:,iframe) O(:,:,iframe); 0 0 0 1];
     end
@@ -141,44 +133,65 @@ for isegment = 1:numel(segments)
     T_a.(segments{isegment}) = Mprod_array3(T_t.(segments{isegment}),repmat(T_ta.(segments{isegment}),[1,1,size(T_t.(segments{isegment}),3)]));
 end
 
-%%
 % ------------------------------------------------------------------------
 % SEGMENT KINEMATICS
 % -------------------------------------------------------------------------
 for isegment = 1:numel(segments)
     T_rel = Mprod_array3(Tinv_array3(T_a.TIBIA),T_a.(segments{isegment}));
-    Euler = R2mobileYXZ_array3(T_rel(1:3,1:3,:)); % As for the carpal bones
-    Euler2 = permute(smooth_array3(permute(Euler,[2,1,3]),fmarker,[],'movmean',200),[2,1,3]);
+    Euler = R2mobileYXZ_array3(T_rel(1:3,1:3,:)); % As for carpal bones
+    Euler = permute(smooth_array3(permute(Euler,[2,1,3]),fmarker,[],'movmean',100),[2,1,3]);
+    Euler = permute(interp_array3(permute(Euler,[2,1,3]),'pchip'),[2,1,3]);
     figure; hold on; 
-    plot(permute(rad2deg(Euler2),[3,2,1]),'-');
+    plot(permute(rad2deg(Euler),[3,2,1]),'-');
     title(segments{isegment});
 end
-%%
-figure;
-hold on; axis equal;
-nmarker = fieldnames(MarkerR);
-for imarker = 1:size(nmarker,1)
-    plot3(MarkerR.(nmarker{imarker})(1,:,1),MarkerR.(nmarker{imarker})(2,:,1),MarkerR.(nmarker{imarker})(3,:,1),'Marker','o','Markersize',5,'Color','black');
-end
-for isegment = 1:numel(segments)
-%     plot_frame(T_t.(segments{isegment})(:,:,1),20,'','--');
-    plot_frame(T_a.(segments{isegment})(:,:,1),20,'','-');
-end
+% figure;
+% hold on; axis equal;
+% for iframe = 1:200:size(T_a.TIBIA,3)
+%     nmarker = fieldnames(MarkerR);
+%     for imarker = 1:size(nmarker,1)
+%         plot3(MarkerR.(nmarker{imarker})(1,:,iframe),MarkerR.(nmarker{imarker})(2,:,iframe),MarkerR.(nmarker{imarker})(3,:,iframe),'Marker','o','Markersize',5,'Color','black');
+%     end
+%     for isegment = 1:numel(segments)
+%     %     plot_frame(T_t.(segments{isegment})(:,:,iframe),20,'','--');
+%         plot_frame(T_a.(segments{isegment})(:,:,iframe),20,'','-');
+%     end
+%     pause(0.01);
+%     cla;
+% end
+explore_clusters_slider(MarkerR,T_a,segments,200);
 
-%%
 % ------------------------------------------------------------------------
 % JOINT KINEMATICS
 % -------------------------------------------------------------------------
 % META1 / CUMED
-T_rel  = Mprod_array3(Tinv_array3(T_a.CUMED),T_a.META1);
-Euler  = R2mobileYXZ_array3(T_rel(1:3,1:3,:));
-Euler2 = permute(smooth_array3(permute(Euler,[2,1,3]),fmarker,[],'movmean',200),[2,1,3]);
-d      = T_rel(1:3,4,:)-mean(T_rel(1:3,4,1:100),3);
-d2     = smooth_array3(d,fmarker,[],'movmean',200);
+T_rel = Mprod_array3(Tinv_array3(T_a.CUMED),T_a.META1);
+Euler = R2mobileYXZ_array3(T_rel(1:3,1:3,:));
+Euler = permute(smooth_array3(permute(Euler,[2,1,3]),fmarker,[],'movmean',200),[2,1,3]);
+Euler = permute(interp_array3(permute(Euler,[2,1,3]),'pchip'),[2,1,3]);
+d     = T_rel(1:3,4,:)-mean(T_rel(1:3,4,1:100),3);
+d     = smooth_array3(d,fmarker,[],'movmean',200);
+d     = interp_array3(d,'pchip');
 figure; sgtitle('META1 / CUMED');
 subplot(1,2,1); hold on;
-plot(permute(rad2deg(Euler2),[3,2,1]),'-');
+plot(permute(rad2deg(Euler),[3,2,1]),'-');
 title('Rotations (°)');
 subplot(1,2,2); hold on;
-plot(permute(d2,[3,1,2]),'-');
+plot(permute(d,[3,1,2]),'-');
 title('Translations (mm)');
+
+% -------------------------------------------------------------------------
+% EXPORT MARKERR TO NEW C3D
+% -------------------------------------------------------------------------
+cd([Folder.data,Specimen.id,'\']);
+nmarker = fieldnames(MarkerR);
+for i = 1:numel(nmarker)
+    name              = nmarker{i};
+    traj              = permute(MarkerR.(name),[3 1 2]);
+    traj              = reshape(traj,[],3);
+    traj              = double(traj);
+    traj(isnan(traj)) = 0; 
+    btkAppendPoint(btkFile,'marker',[name,'_corr'],traj);
+end
+outFile = [regexprep(c3dFile,'.c3d',''),'_corr.c3d'];
+btkWriteAcquisition(btkFile, outFile);
