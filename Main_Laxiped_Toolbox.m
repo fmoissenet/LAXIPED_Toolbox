@@ -19,9 +19,9 @@
 % INIT WORKSPACE
 % -------------------------------------------------------------------------
 clearvars;
-close all;
-warning off;
+close all; 
 clc;
+warning off;
 
 % -------------------------------------------------------------------------
 % SET FOLDERS
@@ -38,25 +38,147 @@ Specimen.id   = 'LAX-EX-A1';
 Specimen.side = 'Right';
 
 % -------------------------------------------------------------------------
-% TIBIA/FIBULA ANATOMICAL CALIBRATION
+% LOAD DYNAMIC TRIAL
 % -------------------------------------------------------------------------
-% Load calibration file
 cd([Folder.data,Specimen.id,'\']);
-c3dFile = 'anatomicalLandmarks_01.c3d';
+c3dFile = 'Measurement_46_20250916_100623.c3d';
 btkFile = btkReadAcquisition(c3dFile);
-Marker  = btkGetMarkers(btkFile);
-Event   = btkGetEvents(btkFile);
+tMarker = btkGetMarkers(btkFile);
+nmarker = fieldnames(tMarker);
 fmarker = btkGetPointFrequency(btkFile);
+% Set bony segments
+segments = {'TIBIA','FIBUL','META1','META2','META3','META4','META5', ...
+            'CUMED','CUINT','CULAT','CUBOI','NAVIC','TALUS','CALCA'};
+% Process marker trajectories
+for imarker = 1:numel(nmarker)
+    data = permute(tMarker.(nmarker{imarker})(:,:), [2,3,1]); % 3x1xT
+    data = zerosToNaN_array3(data);
+    data = interp_array3(data,'pchip');
+%     data = smooth_array3(data,fmarker,3);
+    Marker.(nmarker{imarker}) = data;
+end
+clear tMarker;
 
-% Stylus calibration
-STY01      = permute(Marker.STYLUSa_01,[2,3,1]);
-STY02      = permute(Marker.STYLUSa_02,[2,3,1]);
-STY03      = permute(Marker.STYLUSa_03,[2,3,1]);
-STY04      = permute(Marker.STYLUSa_04,[2,3,1]);
-XSTY       = STY01-STY03;
-YSTY       = STY02-STY04;
-ZSTY       = cross(XSTY,YSTY);
-XSTY       = cross(YSTY,ZSTY);
-TSTY       = [XSTY YSTY ZSTY STY04; zeros(1,3,length(STY01)) ones(1,1,length(STY01))];
-TGLO       = repmat([1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1],[1,1,length(STY01)]);
-[~,~,rCsj] = SCoRE_array3(TGLO,TSTY);
+% -------------------------------------------------------------------------
+% CLUSTER RIGIDIFICATION
+% -------------------------------------------------------------------------
+MarkerR = struct();
+for isegment = 3:numel(segments) % Not on TIBIA and FIBULA
+    seg         = segments{isegment};
+    X_seg       = cat(4,Marker.([seg '_c1']),Marker.([seg '_c2']), ...
+                        Marker.([seg '_c3']),Marker.([seg '_c4']));
+    out         = enforce_cluster_rigidity(X_seg);
+    recon.(seg) = out.Xrigid;
+    Sref.(seg)  = out.Smean;
+    markers     = rigidMarkersFromCluster(recon.(seg));
+    for imarker = 1:4
+        MarkerR.([segments{isegment},'_c',num2str(imarker)]) = markers{imarker};
+    end
+end
+MarkerR.TIBIA_c1 = Marker.TIBIA_c1;
+MarkerR.TIBIA_c2 = Marker.TIBIA_c2;
+MarkerR.TIBIA_c3 = Marker.TIBIA_c3;
+MarkerR.TIBIA_c4 = Marker.TIBIA_c4;
+MarkerR.FIBUL_c1 = Marker.FIBUL_c1;
+MarkerR.FIBUL_c2 = Marker.FIBUL_c2;
+MarkerR.FIBUL_c3 = Marker.FIBUL_c3;
+MarkerR.FIBUL_c4 = Marker.FIBUL_c4;
+MarkerR.FME      = Marker.FME;
+MarkerR.FLE      = Marker.FLE;
+MarkerR.TAM      = Marker.TAM;
+MarkerR.FAL      = Marker.FAL; 
+
+% -------------------------------------------------------------------------
+% SET TIBIA/FIBULA ANATOMICAL COORDINATE SYSTEMS (MEAN FRAMES 1->100)
+% -------------------------------------------------------------------------
+Z         = Vnorm_array3(mean(MarkerR.FAL(:,:,1:100),3)-mean(MarkerR.TAM(:,:,1:100),3));
+X         = Vnorm_array3(cross((mean(MarkerR.FME(:,:,1:100),3)+mean(MarkerR.FLE(:,:,1:100),3))/2-mean(MarkerR.FAL(:,:,1:100),3),(mean(MarkerR.FME(:,:,1:100),3)+mean(MarkerR.FLE(:,:,1:100),3))/2-mean(MarkerR.TAM(:,:,1:100),3)));
+Y         = cross(Z,X);
+O         = (mean(MarkerR.FAL(:,:,1:100),3)+mean(MarkerR.TAM(:,:,1:100),3))/2;
+T_a.TIBIA = [X Y Z O; 0 0 0 1];
+
+% -------------------------------------------------------------------------
+% COMPUTE RIGID TRANSFORMATION BETWEEN TECHNICAL AND ANATOMICAL FRAMES (MEAN FRAMES 1->100)
+% -------------------------------------------------------------------------
+for isegment = 1:numel(segments)
+    X = Vnorm_array3(mean(MarkerR.([segments{isegment},'_c3']),3) - mean(MarkerR.([segments{isegment},'_c1']),3));
+    Y = Vnorm_array3(mean(MarkerR.([segments{isegment},'_c2']),3) - mean(MarkerR.([segments{isegment},'_c4']),3));
+    Z = cross(X,Y); 
+    X = cross(Z,Y);
+    O = (mean(MarkerR.([segments{isegment},'_c1']),3) + ...
+         mean(MarkerR.([segments{isegment},'_c2']),3) + ...
+         mean(MarkerR.([segments{isegment},'_c3']),3) + ...
+         mean(MarkerR.([segments{isegment},'_c4']),3))/4; % Cluster centroid
+    for iframe = 1:size(X,3)
+        T_t.(segments{isegment})(:,:,iframe) = [X(:,:,iframe) Y(:,:,iframe) Z(:,:,iframe) O(:,:,iframe); 0 0 0 1];
+    end
+    % Set rigid transformation between technical and anatomical CS
+    T_ta.(segments{isegment}) = Mprod_array3(Minv_array3(T_t.(segments{isegment})), ...
+                                             [T_a.TIBIA(1:4,1:3) T_t.(segments{isegment})(1:4,4)]);
+end
+
+% -------------------------------------------------------------------------
+% COMPUTE TECHNICAL COORDINATE SYSTEMS
+% -------------------------------------------------------------------------
+for isegment = 1:numel(segments)
+    X = Vnorm_array3(MarkerR.([segments{isegment},'_c3']) - MarkerR.([segments{isegment},'_c1']));
+    Y = Vnorm_array3(MarkerR.([segments{isegment},'_c2']) - MarkerR.([segments{isegment},'_c4']));
+    Z = cross(X,Y); 
+    X = cross(Z,Y);
+    O = (MarkerR.([segments{isegment},'_c1']) + ...
+         MarkerR.([segments{isegment},'_c2']) + ...
+         MarkerR.([segments{isegment},'_c3']) + ...
+         MarkerR.([segments{isegment},'_c4']))/4; % Cluster centroid
+    for iframe = 1:size(X,3)
+        T_t.(segments{isegment})(:,:,iframe) = [X(:,:,iframe) Y(:,:,iframe) Z(:,:,iframe) O(:,:,iframe); 0 0 0 1];
+    end
+end
+
+% -------------------------------------------------------------------------
+% COMPUTE ANATOMICAL COORDINATE SYSTEMS
+% -------------------------------------------------------------------------
+for isegment = 1:numel(segments)
+    T_a.(segments{isegment}) = Mprod_array3(T_t.(segments{isegment}),repmat(T_ta.(segments{isegment}),[1,1,size(T_t.(segments{isegment}),3)]));
+end
+
+%%
+% ------------------------------------------------------------------------
+% SEGMENT KINEMATICS
+% -------------------------------------------------------------------------
+for isegment = 1:numel(segments)
+    T_rel = Mprod_array3(Tinv_array3(T_a.TIBIA),T_a.(segments{isegment}));
+    Euler = R2mobileYXZ_array3(T_rel(1:3,1:3,:)); % As for the carpal bones
+    Euler2 = permute(smooth_array3(permute(Euler,[2,1,3]),fmarker,[],'movmean',200),[2,1,3]);
+    figure; hold on; 
+    plot(permute(rad2deg(Euler2),[3,2,1]),'-');
+    title(segments{isegment});
+end
+%%
+figure;
+hold on; axis equal;
+nmarker = fieldnames(MarkerR);
+for imarker = 1:size(nmarker,1)
+    plot3(MarkerR.(nmarker{imarker})(1,:,1),MarkerR.(nmarker{imarker})(2,:,1),MarkerR.(nmarker{imarker})(3,:,1),'Marker','o','Markersize',5,'Color','black');
+end
+for isegment = 1:numel(segments)
+%     plot_frame(T_t.(segments{isegment})(:,:,1),20,'','--');
+    plot_frame(T_a.(segments{isegment})(:,:,1),20,'','-');
+end
+
+%%
+% ------------------------------------------------------------------------
+% JOINT KINEMATICS
+% -------------------------------------------------------------------------
+% META1 / CUMED
+T_rel  = Mprod_array3(Tinv_array3(T_a.CUMED),T_a.META1);
+Euler  = R2mobileYXZ_array3(T_rel(1:3,1:3,:));
+Euler2 = permute(smooth_array3(permute(Euler,[2,1,3]),fmarker,[],'movmean',200),[2,1,3]);
+d      = T_rel(1:3,4,:)-mean(T_rel(1:3,4,1:100),3);
+d2     = smooth_array3(d,fmarker,[],'movmean',200);
+figure; sgtitle('META1 / CUMED');
+subplot(1,2,1); hold on;
+plot(permute(rad2deg(Euler2),[3,2,1]),'-');
+title('Rotations (°)');
+subplot(1,2,2); hold on;
+plot(permute(d2,[3,1,2]),'-');
+title('Translations (mm)');
