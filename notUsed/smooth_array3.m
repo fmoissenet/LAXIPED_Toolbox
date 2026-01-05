@@ -25,7 +25,7 @@ end
 switch lower(method)
     case 'butter'
         Wn = fc/(fmarker/2);
-        [b,a] = butter(2, Wn, 'low');
+        [b,a] = butter(1, Wn, 'low');
         filterfun = @(y) filtfilt(b,a,y);
 
     case 'movmean'
