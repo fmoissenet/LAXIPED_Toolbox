@@ -1,12 +1,10 @@
-function [R,P,ax] = computeCorrelation(construct,reference,correlationType,titleStr,yLabelStr,color,ax,iplot)
+function [R,P,ax] = computeCorrelation(x,y,correlationType,titleStr,yLabelStr,color,ax,iplot)
 
 % Check normality
 % The assumption of normality required for Pearson correlation was evaluated 
 % using Shapiro–Wilk tests applied to the residuals of the linear regression 
 % model, as recommended. When residuals were not normally distributed or 
 % when the relationship was not strictly linear, Spearman rank correlations were used.
-x          = median(construct,1);
-y          = median(reference,1);
 [r,p]      = corr(x',y','type',correlationType);
 mdl        = fitlm(x, y);
 res        = mdl.Residuals.Raw;
@@ -22,7 +20,7 @@ end
 disp(['p value: ',num2str(P)]);
 
 % Compute CI 95% using a bootstrap resampling
-nspecimen   = size(construct,2);
+nspecimen   = size(x,2);
 nBoot       = 10000;
 bootR       = zeros(nBoot,1);    
 for b = 1:nBoot

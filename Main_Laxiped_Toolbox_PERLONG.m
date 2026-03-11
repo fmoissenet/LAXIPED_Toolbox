@@ -45,7 +45,7 @@ dofLabelList = {'Anterior (+) / Posterior (-) translation', ...
                 'Adduction (+) / Abduction (-)', ...
                 'Dorsiflexion (+) / Plantarflexion (-)', ...
                 '3D translation'};
-for ispecimen = 1%1:size(specimenList,2)
+for ispecimen = 10%1:size(specimenList,2)
 clearvars -except Folder specimenList sideList ispecimen;
 
 % -------------------------------------------------------------------------
@@ -78,7 +78,7 @@ stop    = ceil(Event.stop*fmarker);
 segments  = {'TIBIA','FIBUL','META1','META2','META3','META4','META5', ...
              'CUMED','CUINT','CULAT','CUBOI','NAVIC','TALUS','CALCA','LAXIP'};
 
-for icycle = 1%:size(start,2)
+for icycle = 1:size(start,2)
 
     % ---------------------------------------------------------------------
     % PROCESS MARKER TRAJECTORIES
@@ -154,7 +154,7 @@ for icycle = 1%:size(start,2)
     % ---------------------------------------------------------------------
     % SET LAXIPED COORDINATE SYSTEMS (MEAN FRAME rframe, FULL RECORD)
     % ---------------------------------------------------------------------
-    rframe = 1300:1400;% FRM: 900:1000 ou 1050:1150; FRRM: 1300:1400;
+    rframe = 500:600; % A1: 5000:5100, A2: 500:600, A3: 8000:8100, A4: 1000:1100, A5: 1500:1600, S1: 500:600, S2: 500:600, S3: 1800:1900, S4: 500:600, S5: 500:600
     X = Vnorm_array3(mean(permute(tMarker.LAXIP_c4(rframe,:),[2,3,1]),3,'omitnan')-mean(permute(tMarker.LAXIP_c1(rframe,:),[2,3,1]),3,'omitnan'));
     Z = Vnorm_array3(mean(permute(tMarker.LAXIP_c4(rframe,:),[2,3,1]),3,'omitnan')-mean(permute(tMarker.LAXIP_c3(rframe,:),[2,3,1]),3,'omitnan'));
     Y = cross(Z,X);
@@ -342,9 +342,9 @@ for icycle = 1:kcycle-1
     % UPDATE META1/CUMED RIGID TRANSFORMATION CENTERED ON JOINT CENTER
     % ---------------------------------------------------------------------
     % Get the distal point on META1
-    fcsvFile = 'Landmarks_META1_distal.fcsv';
-    temp = readmatrix(fcsvFile,'Filetype','text','NumHeaderLines',3,'Delimiter',',');
-    distalPoint = temp(1,2:4)'; % m
+%     fcsvFile = 'Landmarks_META1_distal.fcsv';
+%     temp = readmatrix(fcsvFile,'Filetype','text','NumHeaderLines',3,'Delimiter',',');
+%     distalPoint = temp(1,2:4)'; % m
     % Get meshes
     imesh = 1;
     for isegment = [3,8,12] % META1, CUMED, NAVIC
@@ -372,13 +372,13 @@ for icycle = 1:kcycle-1
 %                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c3(:,:,:)']), ...
 %                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c4(:,:,:)']), ...
 %                                                  []);
-%         if isegment == 12 % Only for LAX-EX-S3, LAX-EX-S5, LAX-EX-A2_Klaue, LAX-EX-S3_Klaue
-%             [faces,verticesT,vertices,distalPointT] = getMesh(meshFile,meshFile2,fcsvFile, ...
-%                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
-%                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c2(:,:,:)']), ...
-%                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c3(:,:,:)']), ...
-%                                                  [], ...
-%                                                  []);
+        if isegment == 12 % Only for LAX-EX-S3, LAX-EX-S5, LAX-EX-A2_Klaue, LAX-EX-S3_Klaue
+            [faces,verticesT,vertices,distalPointT] = getMesh(meshFile,meshFile2,fcsvFile, ...
+                                                 eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
+                                                 eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c2(:,:,:)']), ...
+                                                 eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c3(:,:,:)']), ...
+                                                 [], ...
+                                                 []);
 %         elseif isegment == 12 % Only for LAX-EX-A4_Klaue
 %             [faces,verticesT,vertices,distalPointT] = getMesh(meshFile,meshFile2,fcsvFile, ...
 %                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
@@ -386,13 +386,13 @@ for icycle = 1:kcycle-1
 %                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c3(:,:,:)']), ...
 %                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c4(:,:,:)']), ...
 %                                                  []);
-        if isegment == 12 % Only for LAX-EX-S1, LAX-EX-S2, LAX-EX-A1, LAX-EX-S1_Klaue, LAX-EX-S5_Klaue
-            [faces,verticesT,vertices,distalPointT] = getMesh(meshFile,meshFile2,fcsvFile, ...
-                                                 eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
-                                                 eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c2(:,:,:)']), ...
-                                                 [], ...
-                                                 eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c4(:,:,:)']), ...
-                                                 []);
+%         elseif isegment == 12 % Only for LAX-EX-S1, LAX-EX-S2, LAX-EX-A1, LAX-EX-S1_Klaue, LAX-EX-S5_Klaue
+%             [faces,verticesT,vertices,distalPointT] = getMesh(meshFile,meshFile2,fcsvFile, ...
+%                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
+%                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c2(:,:,:)']), ...
+%                                                  [], ...
+%                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c4(:,:,:)']), ...
+%                                                  []);
 %         if isegment == 12 % Only for LAX-EX-A4
 %             [faces,verticesT,vertices,distalPointT] = getMesh(meshFile,meshFile2,fcsvFile, ...
 %                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
@@ -400,13 +400,13 @@ for icycle = 1:kcycle-1
 %                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c3(:,:,:)']), ...
 %                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c4(:,:,:)']), ...
 %                                                  []);
-        elseif isegment == 3 % Use distalPoint of META1
-            [faces,verticesT,vertices,distalPointT] = getMesh(meshFile,meshFile2,fcsvFile, ...
-                                                 eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
-                                                 eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c2(:,:,:)']), ...
-                                                 eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c3(:,:,:)']), ...
-                                                 eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c4(:,:,:)']), ...
-                                                 distalPoint);
+%         elseif isegment == 3 % Use distalPoint of META1
+%             [faces,verticesT,vertices,distalPointT] = getMesh(meshFile,meshFile2,fcsvFile, ...
+%                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
+%                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c2(:,:,:)']), ...
+%                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c3(:,:,:)']), ...
+%                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c4(:,:,:)']), ...
+%                                                  distalPoint);
         else
             [faces,verticesT,vertices,distalPointT] = getMesh(meshFile,meshFile2,fcsvFile, ...
                                                  eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
@@ -418,13 +418,13 @@ for icycle = 1:kcycle-1
         Mesh(imesh).faces     = faces;
         Mesh(imesh).vertices  = vertices;
         Mesh(imesh).verticesT = verticesT;
-        Mesh(imesh).distalPointT = distalPointT;
+%         Mesh(imesh).distalPointT = distalPointT;
         imesh                 = imesh+1;
         clear faces verticesT distalPointT;
     end
     % Identify joint centre of the META1/CUMED joint
     threshold = 3; % mm, arbitrary
-    kplot     = 0;
+    kplot     = 1;
     artSurf1  = findArticularContour(Mesh(1),Mesh(2),threshold);
     JC1_local = findJointCentre(Mesh(1),Mesh(2),artSurf1,kplot)';
     % Express it in META1 and CUMED SCS
@@ -476,15 +476,15 @@ for icycle = 1:kcycle-1
     % Already done
     % Identify joint centre of the CUMED/NAVIC joint
     threshold = 3; % mm, arbitrary
-    kplot     = 0;
+    kplot     = 1;
     artSurf2  = findArticularContour(Mesh(2),Mesh(3),threshold);
     JC2_local = findJointCentre(Mesh(2),Mesh(3),artSurf2,kplot)';
     % Express it in CUMED and NAVIC SCS
-%     temp      = Mprod_array3(Minv_array3(T_a.Cycle(icycle).CUMED(:,:,1)),[JC2_local;1]);
-%     JC2_dyn1  = Mprod_array3(T_a.Cycle(icycle).CUMED,repmat(temp,[1,1,size(T_a.Cycle(icycle).CUMED,3)]));
+    temp      = Mprod_array3(Minv_array3(T_a.Cycle(icycle).CUMED(:,:,1)),[JC2_local;1]);
+    JC2_dyn1  = Mprod_array3(T_a.Cycle(icycle).CUMED,repmat(temp,[1,1,size(T_a.Cycle(icycle).CUMED,3)]));
     % For LAX-EX-S1 and LAX-EX-A1 only
-    temp      = Mprod_array3(Minv_array3(T_a.Cycle(icycle).NAVIC(:,:,1)),[JC2_local;1]); % Express in MOCAP space using NAVIC instead CUMED at frame 1
-    JC2_dyn1  = Mprod_array3(T_a.Cycle(icycle).CUMED,repmat(temp,[1,1,size(T_a.Cycle(icycle).CUMED,3)]));    
+%     temp      = Mprod_array3(Minv_array3(T_a.Cycle(icycle).NAVIC(:,:,1)),[JC2_local;1]); % Express in MOCAP space using NAVIC instead CUMED at frame 1
+%     JC2_dyn1  = Mprod_array3(T_a.Cycle(icycle).CUMED,repmat(temp,[1,1,size(T_a.Cycle(icycle).CUMED,3)]));    
     JC2_dyn1  = JC2_dyn1(1:3,:,:); clear temp;
     temp      = Mprod_array3(Minv_array3(T_a.Cycle(icycle).NAVIC(:,:,1)),[JC2_local;1]);
     JC2_dyn2  = Mprod_array3(T_a.Cycle(icycle).NAVIC,repmat(temp,[1,1,size(T_a.Cycle(icycle).NAVIC,3)]));
@@ -542,16 +542,16 @@ end
 % close all;
 
 % Save
-% cd(Folder.data);
-% save([specimenList{ispecimen},'_Klaue.mat']);
+cd(Folder.data);
+save([specimenList{ispecimen},'_PL.mat']);
 end
 
-figure(500);
-for icycle = 1:3
-    [rC,rCsi,rCsj,Residual] = SCoRE_array3(T_a.Cycle(icycle).META1,T_a.Cycle(icycle).NAVIC);
-    rC3 = permute(rC,[3,1,2]);
-    plot3(rC3(:,1),rC3(:,2),rC3(:,3),'Marker','.','Color','red','Markersize',10)
-end
+% figure(500);
+% for icycle = 1:3
+%     [rC,rCsi,rCsj,Residual] = SCoRE_array3(T_a.Cycle(icycle).META1,T_a.Cycle(icycle).NAVIC);
+%     rC3 = permute(rC,[3,1,2]);
+%     plot3(rC3(:,1),rC3(:,2),rC3(:,3),'Marker','.','Color','red','Markersize',10)
+% end
 
 %% ------------------------------------------------------------------------
 % ANALYSE DATASET
@@ -562,7 +562,7 @@ clearvars -except Folder;
 close all;
 clc;
 cd(Folder.data);
-matFiles  = dir('*.mat'); %_Laxiped _Klaue
+matFiles  = dir('*_PL.mat'); %_Laxiped _Klaue
 jointList = {'META1/CUMED','CUMED/NAVIC'};
 
 % Initialisation
@@ -571,10 +571,7 @@ for ijoint = 1:numel(jointList)
     Joint1(ijoint).F_all  = [];
     Joint1(ijoint).T1_all = []; Joint1(ijoint).T2_all = []; Joint1(ijoint).T3_all = [];
     Joint1(ijoint).R1_all = []; Joint1(ijoint).R2_all = []; Joint1(ijoint).R3_all = [];
-    Joint2(ijoint).F_all  = [];
-    Joint2(ijoint).T1_all = []; Joint2(ijoint).T2_all = []; Joint2(ijoint).T3_all = [];
-    Joint2(ijoint).R1_all = []; Joint2(ijoint).R2_all = []; Joint2(ijoint).R3_all = [];
-    Joint3(ijoint).T2_all = []; Joint4(ijoint).T2_all = [];
+    Joint3(ijoint).T2_all = [];
 end
 dofList   = {'T1_all','T2_all','T3_all','R1_all','R2_all','R3_all'};
 colorList = [0.894, 0.102, 0.110;   % red
@@ -601,463 +598,107 @@ for ifile2 = 1:numel(matFiles)
     load(matFile);    
     ncycle  = size(Measurement,2);
     kcycle  = 1;
-    if contains(matFile,'_Laxiped')
-        for icycle = [4,5,6]% 4,5,6 used for the study
-            LAXIPED1(kfile1).values(kcycle,:) = abs(Measurement(icycle).D1l-Measurement(icycle).D2l)';
-            FRRM2(kcycle,kfile1)               = (Measurement(icycle).D1l(2)-Measurement(icycle).D2l(2)) - ...
-                                                (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
-            FRRM3(kcycle,kfile1)               = (Measurement(icycle).D1l(3)-Measurement(icycle).D2l(3)) - ...
-                                                (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
-            FRRM4(kcycle,kfile1)               = (Measurement(icycle).D1l(4)-Measurement(icycle).D2l(4)) - ...
-                                                (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
-            FRRM5(kcycle,kfile1)               = (Measurement(icycle).D1l(5)-Measurement(icycle).D2l(5)) - ...
-                                                (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
-            FRRM6(kcycle,kfile1)               = (Measurement(icycle).D1l(6)-Measurement(icycle).D2l(6)) - ...
-                                                (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
-            FRRM7(kcycle,kfile1)               = (Measurement(icycle).D1l(7)-Measurement(icycle).D2l(7)) - ...
-                                                (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
-            FRRM8(kcycle,kfile1)               = (Measurement(icycle).D1l(8)-Measurement(icycle).D2l(8)) - ...
-                                                (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
-            FRRM9(kcycle,kfile1)               = (Measurement(icycle).D1l(9)-Measurement(icycle).D2l(9)) - ...
-                                                (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
-            for ijoint = 1:numel(Measurement(icycle).Joint)
-                Joint1(ijoint).F_all          = [Joint1(ijoint).F_all  Measurement(icycle).F];
-                Joint1(ijoint).T1_all         = [Joint1(ijoint).T1_all Measurement(icycle).Joint(ijoint).T1];
-                Joint1(ijoint).T2_all         = [Joint1(ijoint).T2_all abs(Measurement(icycle).Joint(ijoint).T2)];
-                Joint1(ijoint).T3_all         = [Joint1(ijoint).T3_all Measurement(icycle).Joint(ijoint).T3];
-                Joint1(ijoint).R1_all         = [Joint1(ijoint).R1_all Measurement(icycle).Joint(ijoint).R1];
-                Joint1(ijoint).R2_all         = [Joint1(ijoint).R2_all Measurement(icycle).Joint(ijoint).R2];
-                Joint1(ijoint).R3_all         = [Joint1(ijoint).R3_all Measurement(icycle).Joint(ijoint).R3];
-            end
-            Joint3(1).T2_all                  = [Joint3(1).T2_all abs(Measurement(icycle).Joint(1).T2)+abs(Measurement(icycle).Joint(2).T2)];
-            if icycle == 6
-                kfile1                        = kfile1+1;
-            end
-            kcycle                            = kcycle+1;
+    for icycle = 1:8 % 0 kg to 3.5 kg
+        LAXIPED1(kfile1).values(kcycle,:) = abs(Measurement(icycle).D1l-Measurement(icycle).D2l)';
+        FRRM2(kcycle,kfile1)               = (Measurement(icycle).D1l(2)-Measurement(icycle).D2l(2)) - ...
+                                            (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
+        FRRM3(kcycle,kfile1)               = (Measurement(icycle).D1l(3)-Measurement(icycle).D2l(3)) - ...
+                                            (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
+        FRRM4(kcycle,kfile1)               = (Measurement(icycle).D1l(4)-Measurement(icycle).D2l(4)) - ...
+                                            (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
+        FRRM5(kcycle,kfile1)               = (Measurement(icycle).D1l(5)-Measurement(icycle).D2l(5)) - ...
+                                            (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
+        FRRM6(kcycle,kfile1)               = (Measurement(icycle).D1l(6)-Measurement(icycle).D2l(6)) - ...
+                                            (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
+        FRRM7(kcycle,kfile1)               = (Measurement(icycle).D1l(7)-Measurement(icycle).D2l(7)) - ...
+                                            (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
+        FRRM8(kcycle,kfile1)               = (Measurement(icycle).D1l(8)-Measurement(icycle).D2l(8)) - ...
+                                            (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
+        FRRM9(kcycle,kfile1)               = (Measurement(icycle).D1l(9)-Measurement(icycle).D2l(9)) - ...
+                                            (Measurement(icycle).D1l(1)-Measurement(icycle).D2l(1));
+        for ijoint = 1:numel(Measurement(icycle).Joint)
+            Joint1(ijoint).F_all          = [Joint1(ijoint).F_all  Measurement(icycle).F];
+            Joint1(ijoint).T1_all         = [Joint1(ijoint).T1_all Measurement(icycle).Joint(ijoint).T1];
+            Joint1(ijoint).T2_all         = [Joint1(ijoint).T2_all Measurement(icycle).Joint(ijoint).T2];
+            Joint1(ijoint).T3_all         = [Joint1(ijoint).T3_all Measurement(icycle).Joint(ijoint).T3];
+            Joint1(ijoint).R1_all         = [Joint1(ijoint).R1_all Measurement(icycle).Joint(ijoint).R1];
+            Joint1(ijoint).R2_all         = [Joint1(ijoint).R2_all Measurement(icycle).Joint(ijoint).R2];
+            Joint1(ijoint).R3_all         = [Joint1(ijoint).R3_all Measurement(icycle).Joint(ijoint).R3];
         end
-    end
-    if contains(matFile,'_Klaue')
-        for icycle = 1:3%ncycle << 6 cycles in Laxiped mode, 3 in Klaue mode ... keep 3 to have equivalent nb cycles
-            LAXIPED2(kfile2).values(kcycle,:) = abs(Measurement(icycle).D1l-Measurement(icycle).D2l)';
-            FRM2(kcycle,kfile2)                = (Measurement(icycle).D1l(2)) - ...
-                                                (Measurement(icycle).D1l(1));
-            FRM3(kcycle,kfile2)                = (Measurement(icycle).D1l(3)) - ...
-                                                (Measurement(icycle).D1l(1));
-            FRM4(kcycle,kfile2)                = (Measurement(icycle).D1l(4)) - ...
-                                                (Measurement(icycle).D1l(1));
-            FRM5(kcycle,kfile2)                = (Measurement(icycle).D1l(5)) - ...
-                                                (Measurement(icycle).D1l(1));
-            FRM6(kcycle,kfile2)                = (Measurement(icycle).D1l(6)) - ...
-                                                (Measurement(icycle).D1l(1));
-            FRM7(kcycle,kfile2)                = (Measurement(icycle).D1l(7)) - ...
-                                                (Measurement(icycle).D1l(1));
-            FRM8(kcycle,kfile2)                = (Measurement(icycle).D1l(8)) - ...
-                                                (Measurement(icycle).D1l(1));
-            FRM9(kcycle,kfile2)                = (Measurement(icycle).D1l(9)) - ...
-                                                (Measurement(icycle).D1l(1));
-            for ijoint = 1:numel(Measurement(icycle).Joint)
-                Joint2(ijoint).F_all          = [Joint2(ijoint).F_all  Measurement(icycle).F];
-                Joint2(ijoint).T1_all         = [Joint2(ijoint).T1_all Measurement(icycle).Joint(ijoint).T1];
-                Joint2(ijoint).T2_all         = [Joint2(ijoint).T2_all absMeasurement(icycle).Joint(ijoint).T2];
-                Joint2(ijoint).T3_all         = [Joint2(ijoint).T3_all Measurement(icycle).Joint(ijoint).T3];
-                Joint2(ijoint).R1_all         = [Joint2(ijoint).R1_all Measurement(icycle).Joint(ijoint).R1];
-                Joint2(ijoint).R2_all         = [Joint2(ijoint).R2_all Measurement(icycle).Joint(ijoint).R2];
-                Joint2(ijoint).R3_all         = [Joint2(ijoint).R3_all Measurement(icycle).Joint(ijoint).R3];
-            end
-            Joint4(1).T2_all                  = [Joint4(1).T2_all abs(Measurement(icycle).Joint(1).T2)+abs(Measurement(icycle).Joint(2).T2)];
-            if icycle == 3
-                kfile2                        = kfile2+1;
-            end
-            kcycle                            = kcycle+1;
+        Joint3(1).T2_all                  = [Joint3(1).T2_all abs(Measurement(icycle).Joint(1).T2)+abs(Measurement(icycle).Joint(2).T2)];
+        if icycle == 8
+            kfile1                        = kfile1+1;
         end
+        kcycle                            = kcycle+1;
     end
 end 
 
 %%
-% Plot specimen measurements (boxplot)
-figure(10); set(gcf,'Color','white');
+% Plot specimen measurements
+figure(11); set(gcf,'Color','white');
+sgtitle('Superior-inferior translations at 45 N (blue: META1/CUMED, orange: NAVIC/CUMED');
+clear data dataplot;
 
-ijoint = 1;
-idof   = 2;
+nspecimen = 10;
+ncycle    = 8; % Different tendon tension levels
+
+ijoint    = 1;
+idof      = 2;
+H         = 0.6;                    % teinte (bleu)
+S         = 0.7;                    % saturation modérée
+V         = linspace(0.1,1,ncycle); % foncé → très clair
+test = [];
 for iforce = 1:9
-    data = reshape(Joint3(ijoint).(dofList{idof})(iforce,:),[3,10]);
-    for ispecimen = 1:10
+    data = reshape(Joint1(ijoint).(dofList{idof})(iforce,:),[ncycle,nspecimen]);
+    for ispecimen = 1:nspecimen
+        dataplot(ispecimen).values(:,iforce) = data(:,ispecimen);
+    end
+    for icycle = 1:ncycle
+        test = [test (dataplot(ispecimen).values(icycle,end)-dataplot(ispecimen).values(icycle,1)) - ...
+                     (dataplot(ispecimen).values(1,end)-dataplot(ispecimen).values(1,1))];
+    end
+end
+for ispecimen = 1:nspecimen
+    subplot(2,5,ispecimen); hold on; box on; grid on;
+    for icycle = 1:ncycle
+        rgb = hsv2rgb([H S V(icycle)]);
+        plot(icycle, ...
+             (dataplot(ispecimen).values(icycle,9) - ...
+             (dataplot(ispecimen).values(1,9))), ...            
+             'Color',rgb,'LineWidth',2,'Marker','o');
+%              (dataplot(ispecimen).values(icycle,1)-dataplot(ispecimen).values(icycle,1)) - ...
+%              (dataplot(ispecimen).values(1,1)-dataplot(ispecimen).values(1,1)), ...
+    end
+    xlabel('Mass (kg)'); xticks([1:1:8]); xticklabels([0:0.5:3.5]);
+    ylabel('Translation (mm)');
+    ylim([-10,15]);
+    title(specimenList{ispecimen});
+end
+
+ijoint    = 2;
+idof      = 2;
+H         = 0.1;                    % teinte (bleu)
+S         = 0.7;                    % saturation modérée
+V         = linspace(0.1,1,ncycle); % foncé → très clair
+for iforce = 1:9
+    data = reshape(Joint1(ijoint).(dofList{idof})(iforce,:),[ncycle,nspecimen]);
+    for ispecimen = 1:nspecimen
         dataplot(ispecimen).values(:,iforce) = data(:,ispecimen);
     end
 end
-for ispecimen = 1:10
+for ispecimen = 1:nspecimen
     subplot(2,5,ispecimen); hold on; box on; grid on;
-    boxplot(dataplot(ispecimen).values);
-    boxes = findobj(gca,'Tag','Box');
-    boxes = flipud(boxes);
-    for i = 1:length(boxes)
-        patch(get(boxes(i),'XData'),get(boxes(i),'YData'),colorList(ispecimen,:), ...
-              'FaceAlpha',0.5,'EdgeColor','none','LineWidth',1);
-    end     
-    set(boxes,'Visible','off');
-    xlabel('Force (N)'); xticks([1:1:9]); xticklabels({ceil(mean(Joint1(ijoint).F_all,2)')});
-    ylabel('Translation (mm)');
-end
-
-%%
-% Plot specimen measurements (mean curve)
-figure(10); 
-set(gcf,'Color','white');
-specimenList = {'S1','S2','S3','S4','S5','S6','S7','S8','S9','S10'};
-
-for iforce = 1:9
-    data1 = reshape(Joint1(1).(dofList{2})(iforce,:),[3,10]);
-    data2 = reshape(Joint1(2).(dofList{2})(iforce,:),[3,10]);
-    data3 = reshape(Joint3(1).(dofList{2})(iforce,:),[3,10]);
-    for ispecimen = 1:10
-        dataplot1(ispecimen).values(:,iforce) = data1(:,ispecimen);
-        dataplot2(ispecimen).values(:,iforce) = data2(:,ispecimen);
-        dataplot3(ispecimen).values(:,iforce) = data3(:,ispecimen);
+    for icycle = 1:ncycle
+        rgb = hsv2rgb([H S V(icycle)]);
+        plot(icycle, ...
+             (dataplot(ispecimen).values(icycle,9) - ...
+             (dataplot(ispecimen).values(1,9))), ...            
+             'Color',rgb,'LineWidth',2,'Marker','o');
+%              (dataplot(ispecimen).values(icycle,1)-dataplot(ispecimen).values(icycle,1)) - ...
+%              (dataplot(ispecimen).values(1,1)-dataplot(ispecimen).values(1,1)), ...
     end
-end
-
-% couleurs pour les trois courbes
-colors = lines(3);   % bleu, rouge, jaune
-
-for ispecimen = 1:10
-    subplot(2,5,ispecimen); hold on; box on; grid on;
+    xlabel('Mass (kg)'); xticks([1:1:8]); xticklabels([0:0.5:3.5]);
+    ylabel('Translation (mm)');
+    ylim([-10,15]);
     title(specimenList{ispecimen});
-    x = 1:9;
-
-    % ---- COURBE 1 ----
-    m1  = mean(dataplot1(ispecimen).values,1);
-    sd1 = std(dataplot1(ispecimen).values,0,1);
-
-    % corridor SD
-    fill([x fliplr(x)], [m1-sd1 fliplr(m1+sd1)], ...
-         colors(1,:), 'FaceAlpha',0.15, 'EdgeColor','none');
-
-    % courbe moy
-    plot(x, m1, 'Color', colors(1,:), 'LineWidth', 1.5);
-
-    % marqueurs mean
-    scatter(x, m1, 40, colors(1,:), 'filled', ...
-            'MarkerEdgeColor','k', 'LineWidth',0.6);
-
-    % ---- COURBE 2 ----
-    m2  = mean(dataplot2(ispecimen).values,1);
-    sd2 = std(dataplot2(ispecimen).values,0,1);
-
-    fill([x fliplr(x)], [m2-sd2 fliplr(m2+sd2)], ...
-         colors(2,:), 'FaceAlpha',0.15, 'EdgeColor','none');
-
-    plot(x, m2, 'Color', colors(2,:), 'LineWidth', 1.5);
-
-    scatter(x, m2, 40, colors(2,:), 'filled', ...
-            'MarkerEdgeColor','k', 'LineWidth',0.6);
-
-    % ---- COURBE 3 ----
-    m3  = mean(dataplot3(ispecimen).values,1);
-    sd3 = std(dataplot3(ispecimen).values,0,1);
-
-    fill([x fliplr(x)], [m3-sd3 fliplr(m3+sd3)], ...
-         colors(3,:), 'FaceAlpha',0.15, 'EdgeColor','none');
-
-    plot(x, m3, 'Color', colors(3,:), 'LineWidth', 1.5);
-
-    scatter(x, m3, 40, colors(3,:), 'filled', ...
-            'MarkerEdgeColor','k', 'LineWidth',0.6);
-
-    % axes
-    xlabel('Force (N)');
-    xticks(1:9);
-    xticklabels({ceil(mean(Joint1(ijoint).F_all,2)')});
-    ylabel('Translation (mm)');
-end
-
-
-%%
-% Analyse correlations 
-correlationType = 'Pearson';
-iplot     = 0;
-ijoint    = 1;
-idof      = 2;
-nspecimen = 10;
-ntrial    = 3;
-
-colorFRRM = [243*1/255 95*1/255 90*1/255];
-colorFRM  = [23*1/255 180*1/255 183*1/255];
-
-% Compute correlation
-figure('Position',[50,70,1200,500]);
-set(gcf,'Color','white');
-ax(1) = subplot(1,3,1);
-
-% FRRM (Joint1: META1/CUMED, Joint3: META1/CUMED+CUMED/NAVIC > ijoint = 1 !!)
-construct  = FRRM9;
-reference  = reshape(Joint3(ijoint).(dofList{idof})(9,:),[ntrial,nspecimen]) - ...
-             reshape(Joint3(ijoint).(dofList{idof})(1,:),[ntrial,nspecimen]);
-[r1,p1,ax] = computeCorrelation(construct,reference,correlationType, ...
-                                [jointList{ijoint}],dofList{idof},colorFRRM,ax,2);
-
-subplot(1,3,1);
-clear x y;
-x = median(construct,1);
-y = median(reference,1);
-[~,idx] = sort(y,'ascend');
-for k = 1:numel(idx)
-    col = idx(k);
-    scatter(y(:,col),x(:,col), ...
-            80, ...
-            colorFRRM, ...
-            'filled', ...
-            'MarkerFaceAlpha', 0.8);
-    grid on; box on; hold on;
-end
-p            = polyfit(y(:,idx),x(:,idx),1);
-xFit         = y(:);
-yFit         = x(:);
-mdl          = fitlm(xFit,yFit); 
-xLine        = linspace(min(xFit),max(xFit),100)';
-[yLine,yCI]  = predict(mdl,xLine);
-patch([xLine; flipud(xLine)], ...
-      [yCI(:,1); flipud(yCI(:,2))], ...
-      colorFRRM, ...                % couleur (noir)
-      'FaceAlpha', 0.1, ...       % transparence
-      'EdgeColor', 'none');       % pas de bord
-hold on;
-xlabel('Reference construct (mm)','FontSize',14);   % adapte le texte
-ylabel('Construct (mm)','FontSize',14);
-set(gca,'FontSize',14);
-grid on; box on;
-
-% FRM (Joint2: META1/CUMED, Joint4: META1/CUMED+CUMED/NAVIC > ijoint = 1 !!)
-% iplot     = iplot+1;
-construct  = FRM9;
-reference  = reshape(Joint4(ijoint).(dofList{idof})(9,:),[ntrial,nspecimen]) - ...
-             reshape(Joint4(ijoint).(dofList{idof})(1,:),[ntrial,nspecimen]);
-[r2,p2,ax] = computeCorrelation(construct,reference,correlationType, ...
-                                [jointList{ijoint}],dofList{idof},colorFRM,ax,3);
-
-subplot(1,3,1);
-clear x y;
-x = median(construct,1);
-y = median(reference,1);
-[~,idx] = sort(y,'ascend');
-for k = 1:numel(idx)
-    col = idx(k);
-    scatter(y(:,col),x(:,col), ...
-            80, ...
-            colorFRM, ...
-            'filled', ...
-            'MarkerFaceAlpha', 0.8);
-    grid on; box on; hold on;
-end
-p            = polyfit(y(:,idx),x(:,idx),1);
-xFit         = y(:);
-yFit         = x(:);
-mdl          = fitlm(xFit,yFit); 
-xLine2        = linspace(min(xFit),max(xFit),100)';
-[yLine2,yCI] = predict(mdl,xLine2);
-patch([xLine2; flipud(xLine2)], ...
-      [yCI(:,1); flipud(yCI(:,2))], ...
-      colorFRM, ...                % couleur (noir)
-      'FaceAlpha', 0.1, ...       % transparence
-      'EdgeColor', 'none');       % pas de bord
-hold on;
-xlabel('Reference construct (mm)','FontSize',14);   % adapte le texte
-ylabel('Construct (mm)','FontSize',14);
-set(gca,'FontSize',14);
-grid on; box on;
-
-ax(1) = subplot(1,3,1); 
-set(get(gca,'Children'),'HandleVisibility','off');
-h1 = plot(xLine,yLine,'Linestyle','-','LineWidth',2,'Color',colorFRRM);
-h2 = plot(xLine2,yLine2,'Linestyle','-','LineWidth',2,'Color',colorFRM);
-lgd = legend({['FRRM: R = ',num2str(round(r1,2)),', p = ',num2str(round(p1,3))], ...
-              ['FRM: R = ',num2str(round(r2,2)),', p = ',num2str(round(p2,3))]});
-lgd.Box = 'off';
-lgd.Units = 'normalized';
-lgd.Position = [0.13 0.82 0.1 0.05];  
-set(lgd,'FontName','Arial', ...
-        'FontSize',14, ...
-        'FontWeight','normal');
-
-pos = get(ax(1),'Position'); % [left bottom width height]
-title(ax(1),'Pearson correlation');
-pos(1) = 0.05;
-pos(2) = pos(2)+0.05;
-pos(3) = 0.50;
-pos(4) = pos(4)-0.05;
-set(ax(1),'Position',pos);
-set(ax(1),'FontName','Arial', ...
-          'FontSize',16, ...
-          'FontWeight','normal');
-
-pos = get(ax(2),'Position');
-title(ax(2),'LOO (FRRM)');
-pos(1) = 0.62;
-pos(2) = pos(2)+0.05;
-pos(3) = 0.15;
-pos(4) = pos(4)-0.05;
-set(ax(2),'Position',pos);
-set(ax(2),'FontName','Arial', ...
-          'FontSize',16, ...
-          'FontWeight','normal');
-
-pos = get(ax(3),'Position');
-title(ax(3),'LOO (FRM)');
-pos(1) = pos(1)+0.14;
-pos(2) = pos(2)+0.05;
-pos(3) = 0.15;
-pos(4) = pos(4)-0.05;
-set(ax(3),'Position',pos);
-set(ax(3),'FontName','Arial', ...
-          'FontSize',16, ...
-          'FontWeight','normal');
-
-%%
-idof       = 2;
-ntrial     = 3;
-nspecimen  = 10;
-
-% Joint_Laxiped vs Joint_Klaue (LME) - Joint 1
-ijoint     = 1;
-clear data_raw1 data_raw2 data1 data2;
-data_raw1  = reshape(Joint1(ijoint).(dofList{idof})(9,:),[ntrial,nspecimen]) - ...
-             reshape(Joint1(ijoint).(dofList{idof})(1,:),[ntrial,nspecimen]);
-data_raw2  = reshape(Joint2(ijoint).(dofList{idof})(9,:),[ntrial,nspecimen]) - ...
-             reshape(Joint2(ijoint).(dofList{idof})(1,:),[ntrial,nspecimen]);
-data1      = mean(data_raw1,1);
-data2      = mean(data_raw2,1);  
-data       = [data1';data2'];
-
-Mode     = [repmat({'FRRM'},30,1); repmat({'FRM'},30,1)];
-Specimen = repmat((1:10)', 6, 1);
-Value    = [data_raw1(:); data_raw2(:)];
-T        = table(Value, Mode, Specimen);
-lme      = fitlme(T, 'Value ~ Mode + (1|Specimen)');
-disp(lme);
-
-% Joint_Laxiped vs Joint_Klaue (LME) - Joint 2
-ijoint     = 2;
-clear data_raw1 data_raw2 data1 data2;
-data_raw1  = reshape(Joint1(ijoint).(dofList{idof})(9,:),[ntrial,nspecimen]) - ...
-             reshape(Joint1(ijoint).(dofList{idof})(1,:),[ntrial,nspecimen]);
-data_raw2  = reshape(Joint2(ijoint).(dofList{idof})(9,:),[ntrial,nspecimen]) - ...
-             reshape(Joint2(ijoint).(dofList{idof})(1,:),[ntrial,nspecimen]);
-data1      = mean(data_raw1,1);
-data2      = mean(data_raw2,1);  
-data       = [data [data1';data2']];
-
-Mode     = [repmat({'FRRM'},30,1); repmat({'FRM'},30,1)];
-Specimen = repmat((1:10)', 6, 1);
-Value    = [data_raw1(:); data_raw2(:)];
-T        = table(Value, Mode, Specimen);
-lme      = fitlme(T, 'Value ~ Mode + (1|Specimen)');
-disp(lme);
-
-% Boxplot
-colorFRRM = [243*1/255 95*1/255 90*1/255];
-colorFRM  = [23*1/255 180*1/255 183*1/255];
-c =  [colorFRRM; colorFRM]; 
-
-figure('Position',[50,70,800,500]);
-hold on; grid on; box on;
-set(gcf,'Color','white');
-condition_names = {'First tarsometatarsal joint','Medial naviculocuneiform joint'};
-group_inx = [ones(1,10), 2.*ones(1,10)];
-h = daviolinplot(data(:,1:2),'groups',group_inx(1:20),'outsymbol','k+',...
-    'xtlabels', condition_names,'color',c,'scatter',2,'jitter',1,...
-    'box',1,'boxcolors','same','scattercolors','same',...
-    'boxspacing',1.1,'outliers',0);
-ylabel('Superior-inferior translation (mm)');
-xl = xlim; xlim([xl(1)-0.1, xl(2)+0.2]); % make more space for the legend
-set(gca,'FontSize',10);
-
-lgd = legend({'LaxiPed mode','Klaue mode'});
-lgd.Box = 'off';
-lgd.Units = 'normalized';
-lgd.Position = [0.75 0.83 0.1 0.05];  
-set(lgd,'FontName','Arial', ...
-        'FontSize',14, ...
-        'FontWeight','normal');
-
-hold on; grid on; box on;
-set(gca,'FontName','Arial', ...
-          'FontSize',14, ...
-          'FontWeight','normal');
-
-%%
-cd(['C:\Users\Florent\OneDrive - Université de Genève\_PROJETS\LAXIPED\WP1\Dataset\CTscans\',specimenList{10},'\']);
-
-icycle = 1;
-imesh = 1;
-for isegment = [3,8,12]
-    meshFile  = ['Mesh_',segments{isegment},'.stl'];
-    meshFile2 = ['Mesh_',segments{isegment},'_clean.stl'];
-    fcsvFile  = ['Landmarks_',segments{isegment},'.fcsv'];
-    [faces,verticesT,vertices] = getMesh(meshFile,meshFile2,fcsvFile, ...
-                                         eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
-                                         eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c2(:,:,:)']), ...
-                                         eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c3(:,:,:)']), ...
-                                         eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c4(:,:,:)']));
-    Mesh(imesh).faces     = faces;
-    Mesh(imesh).vertices  = vertices;
-    Mesh(imesh).verticesT = verticesT;
-    imesh = imesh+1;
-    clear faces verticesT;
-end
-
-for icycle = 1%:kcycle-1
-    for isegment = [3,8,12]%3:14
-        meshFile  = ['Mesh_',segments{isegment},'.stl'];
-        meshFile2 = ['Mesh_',segments{isegment},'_clean.stl'];
-        fcsvFile  = ['Landmarks_',segments{isegment},'.fcsv'];
-        [faces,verticesT] = getMesh(meshFile,meshFile2,fcsvFile, ...
-                                    eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c1(:,:,:)']), ...
-                                    eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c2(:,:,:)']), ...
-                                    eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c3(:,:,:)']), ...
-                                    eval(['MarkerR.Cycle(',num2str(icycle),').',segments{isegment},'_c4(:,:,:)']));
-        Mesh(isegment-2).faces = faces;
-        Mesh(isegment-2).verticesT = verticesT;
-        clear faces verticesT;
-    end
-    explore_clusters_slider(MarkerR.Cycle(icycle),T_a.Cycle(icycle),1:11,segments,200,Mesh,dorsPt11,dorsPt12);
-
-    centre = mean(Mesh(1).verticesT,2);
-    vector = [max(Measurement(1).Joint(1).T1);max(Measurement(1).Joint(1).T2);max(Measurement(1).Joint(1).T3)];
-    vector = Mprod_array3(T_a.Cycle(1).CUMED(:,:,1),[vector;1]);
-    vector = vector(1:3);
-    q = quiver3(centre(1,:,1),centre(2,:,1),centre(3,:,1), ...
-                vector(1),vector(2),vector(3), ...
-                0.5);
-    q.LineWidth = 2;
-    q.MaxHeadSize = 1;
-
-    centre = mean(Mesh(6).verticesT,2);
-    vector = [max(Measurement(1).Joint(2).T1);max(Measurement(1).Joint(2).T2);max(Measurement(1).Joint(2).T3)];
-    vector = Mprod_array3(T_a.Cycle(1).NAVIC(:,:,1),[vector;1]);
-    vector = vector(1:3);
-    q = quiver3(centre(1,:,1),centre(2,:,1),centre(3,:,1), ...
-                vector(1),vector(2),vector(3), ...
-                0.5);
-    q.LineWidth = 2;
-    q.MaxHeadSize = 1;
-
-    centre = mean(Mesh(2).verticesT,2);
-    vector = [max(Measurement(1).Joint(3).T1);max(Measurement(1).Joint(3).T2);max(Measurement(1).Joint(3).T3)];
-    vector = Mprod_array3(T_a.Cycle(1).CUINT(:,:,1),[vector;1]);
-    vector = vector(1:3);
-    q = quiver3(centre(1,:,1),centre(2,:,1),centre(3,:,1), ...
-                vector(1),vector(2),vector(3), ...
-                0.5);
-    q.LineWidth = 2;
-    q.MaxHeadSize = 1;
-
-    centre = mean(Mesh(7).verticesT,2);
-    vector = [max(Measurement(1).Joint(4).T1);max(Measurement(1).Joint(4).T2);max(Measurement(1).Joint(4).T3)];
-    vector = Mprod_array3(T_a.Cycle(1).NAVIC(:,:,1),[vector;1]);
-    vector = vector(1:3);
-    q = quiver3(centre(1,:,1),centre(2,:,1),centre(3,:,1), ...
-                vector(1),vector(2),vector(3), ...
-                0.5);
-    q.LineWidth = 2;
-    q.MaxHeadSize = 1;
-%     clear Mesh; 
 end
